@@ -7,29 +7,20 @@ using System.Reflection;
 var assemblyBuilder =
 	AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Assembly"), AssemblyBuilderAccess.Run);
 var moduleBuilder = assemblyBuilder.DefineDynamicModule("Module");
-
-// Define a new type
 var typeBuilder = moduleBuilder.DefineType("SomeType", TypeAttributes.Public);
-
-// Define a new method
 var methodBuilder = typeBuilder.DefineMethod(
 	"MyConsole",
 	MethodAttributes.Public | MethodAttributes.Static, typeof(void),
-	new Type[] { typeof(string) });
-
-// Generate IL code for the method
+	new[] { typeof(string) });
 var ilGenerator = methodBuilder.GetILGenerator();
 ilGenerator.Emit(OpCodes.Ldarg_0);
-ilGenerator.Emit(OpCodes.Call, typeof(Console).GetMethod("WriteLine", new Type[] { typeof(string) })!);
+ilGenerator.Emit(OpCodes.Call, typeof(Console).GetMethod("WriteLine", new[] { typeof(string) })!);
 ilGenerator.Emit(OpCodes.Ret);
-
-// Create the type and call the new method
 var type = typeBuilder.CreateType();
 var method = type.GetMethod(name: "MyConsole");
 method?.Invoke(null, new object[] { "Hello, world!" });
 
 #endregion
-
 
 
 // Simple mapper method call
@@ -40,7 +31,7 @@ var destinationObject = mapper(sourceObject);
 
 Console.WriteLine($"Id: {destinationObject.Id}, Name: {destinationObject.Name}");
 
-class Mapper<TSource, TDestination>
+static class Mapper<TSource, TDestination>
 {
 	public static Func<TSource, TDestination> CreateMap()
 	{
@@ -48,7 +39,7 @@ class Mapper<TSource, TDestination>
 		var destinationType = typeof(TDestination);
 
 		var dynamicMethod = new DynamicMethod(
-			"Map", destinationType, 
+			"Map", destinationType,
 			new[] { sourceType }, true);
 
 		var il = dynamicMethod.GetILGenerator();

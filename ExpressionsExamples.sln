@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Expressions", "Expressions\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmitExamples", "EmitExamples\EmitExamples.csproj", "{648C077B-7791-438D-9E16-623CABECFCDA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreatingObjects", "CreatingObjects\CreatingObjects.csproj", "{8007B54B-BCD4-449F-8970-75F77EDE33A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{648C077B-7791-438D-9E16-623CABECFCDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{648C077B-7791-438D-9E16-623CABECFCDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{648C077B-7791-438D-9E16-623CABECFCDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8007B54B-BCD4-449F-8970-75F77EDE33A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8007B54B-BCD4-449F-8970-75F77EDE33A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8007B54B-BCD4-449F-8970-75F77EDE33A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8007B54B-BCD4-449F-8970-75F77EDE33A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

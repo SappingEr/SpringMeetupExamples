@@ -8,11 +8,38 @@ using System.Linq.Expressions;
 
 namespace MappingExamples
 {
+	[MemoryDiagnoser()]
+	[HideColumns(
+		BenchmarkDotNet.Columns.Column.Error,
+		BenchmarkDotNet.Columns.Column.RatioSD,
+		BenchmarkDotNet.Columns.Column.StdDev,
+		BenchmarkDotNet.Columns.Column.AllocRatio,
+		BenchmarkDotNet.Columns.Column.Gen0,
+		BenchmarkDotNet.Columns.Column.Gen1,
+		BenchmarkDotNet.Columns.Column.Gen2)]
 	public class Examples
 	{
 		private const int Id = 10250;
-		private const string ConnectionString = "Your connection string:-)";
-		private const string ExpressionQuery = "SELECT o.OrderID, o.ShippedDate, o.OrderDate, o.ShipVia, o.Freight, o.ShipName, o.ShipAddress, o.ShipCity, o.ShipRegion, o.ShipPostalCode, o.ShipCountry FROM [dbo].[Orders] AS o WHERE o.OrderID = @Id;";
+
+		private const string ConnectionString =
+			"data source = localhost;initial catalog = NorthwindTests; persist security info = True; Integrated Security = SSPI; Encrypt=false";
+
+		private const string Query =
+			"""
+			 SELECT o.OrderID,
+				    o.ShippedDate,
+				    o.OrderDate,
+				    o.ShipVia,
+				    o.Freight,
+				    o.ShipName,
+				    o.ShipAddress,
+				    o.ShipCity,
+				    o.ShipRegion,
+				    o.ShipPostalCode,
+				    o.ShipCountry
+			 FROM [dbo].[Orders] AS o
+			 WHERE o.OrderID = @Id;
+			""";
 
 		private readonly Mock<IDataReader> _mockReader = GetMockDataReader();
 		private readonly Func<IDataReader, Order> _cachedMap = Map<Order>();
@@ -20,8 +47,9 @@ namespace MappingExamples
 		private IDataReader DbReader => _mockReader.Object;
 
 		#region GetOrderByReader
+
 		//4.754 us
-		[Benchmark]
+		//[Benchmark(Baseline = true)]
 		public Order? GetOrderByReader()
 		{
 			Order? order = null;
@@ -34,33 +62,39 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByReflectionMapper
+
 		//5.382 us
-		[Benchmark]
+		//[Benchmark]
 		public Order? GetOrderByReflectionMapper()
 		{
 			var reader = DbReader;
 			var order = ReflectionMapObject<Order>(reader);
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByReflectionMapperWithAccessor
+
 		//5.093 us
-		[Benchmark]
+		//[Benchmark]
 		public Order? GetOrderByReflectionMapperWithAccessor()
 		{
 			var reader = DbReader;
 			var order = ReflectionMapObjectTypeWithAccessor<Order>(reader);
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByExpression
+
 		//637.3 us
-		[Benchmark]
+		//[Benchmark]
 		public Order? GetOrderByExpression()
 		{
 			Order? order = null;
@@ -74,11 +108,13 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByCachedExpression
+
 		//4.803 us
-		[Benchmark]
+		//[Benchmark]
 		public Order? GetOrderByCachedExpression()
 		{
 			Order? order = null;
@@ -91,21 +127,24 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByReaderDB
+
 		//117.3 us
-		//[Benchmark]
-		public Order? GetOrderByReaderDB()
+		[Benchmark(Baseline = true)]
+		public Order? GetOrderByReaderDb()
 		{
 			Order? order = null;
 			using var connection = OpenConnection();
 			var command = connection.CreateCommand();
 			command.CommandType = CommandType.Text;
-			command.CommandText = ExpressionQuery;
+			command.CommandText = Query;
 			command.Parameters.Add(new SqlParameter("@Id", Id));
 
 			using var reader = command.ExecuteReader();
+
 			if (!reader.HasRows)
 				return order;
 
@@ -116,18 +155,20 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByReflectionMapperDb
+
 		//126.4 us
-		//[Benchmark]
+		[Benchmark]
 		public Order? GetOrderByReflectionMapperDb()
 		{
 			Order? order = null;
 			using var connection = OpenConnection();
 			var command = connection.CreateCommand();
 			command.CommandType = CommandType.Text;
-			command.CommandText = ExpressionQuery;
+			command.CommandText = Query;
 			command.Parameters.Add(new SqlParameter("@Id", Id));
 
 			using var reader = command.ExecuteReader();
@@ -138,18 +179,44 @@ namespace MappingExamples
 			order = ReflectionMapObject<Order>(reader);
 			return order;
 		}
+
 		#endregion
 
+		#region GetOrderByReflectionMapperWithAccessorDB
+
+		//5.093 us
+		[Benchmark]
+		public Order? GetOrderByReflectionMapperWithAccessorDb()
+		{
+			Order? order = null;
+			using var connection = OpenConnection();
+			var command = connection.CreateCommand();
+			command.CommandType = CommandType.Text;
+			command.CommandText = Query;
+			command.Parameters.Add(new SqlParameter("@Id", Id));
+
+			using var reader = command.ExecuteReader();
+
+			if (!reader.HasRows)
+				return order;
+
+			order = ReflectionMapObjectTypeWithAccessor<Order>(reader);
+			return order;
+		}
+
+		#endregion GetOrderByReflectionMapperWithAccessorDB
+
 		#region GetOrderByExpressionDb
+
 		//1.008 ms
-		//[Benchmark]
+		[Benchmark]
 		public Order? GetOrderByExpressionDb()
 		{
 			Order? order = null;
 			using var connection = OpenConnection();
 			var command = connection.CreateCommand();
 			command.CommandType = CommandType.Text;
-			command.CommandText = ExpressionQuery;
+			command.CommandText = Query;
 			command.Parameters.Add(new SqlParameter("@Id", Id));
 			var mapper = Map<Order>();
 
@@ -165,18 +232,20 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		#region GetOrderByCachedExpressionDb
+
 		//123.8 us
-		//[Benchmark]
+		[Benchmark]
 		public Order? GetOrderByCachedExpressionDb()
 		{
 			Order? order = null;
 			using var connection = OpenConnection();
 			var command = connection.CreateCommand();
 			command.CommandType = CommandType.Text;
-			command.CommandText = ExpressionQuery;
+			command.CommandText = Query;
 			command.Parameters.Add(new SqlParameter("@Id", Id));
 			var mapper = _cachedMap;
 
@@ -192,6 +261,7 @@ namespace MappingExamples
 
 			return order;
 		}
+
 		#endregion
 
 		private T? ReflectionMapObject<T>(IDataReader reader)
@@ -200,17 +270,17 @@ namespace MappingExamples
 			var properties = type.GetProperties();
 			var instance = Activator.CreateInstance(type);
 
-			if (reader.Read())
-			{
-				for (var i = 0; i < reader.FieldCount; i++)
-				{
-					var fieldName = reader.GetName(i);
-					var property =
-						properties.FirstOrDefault(p
-							=> string.Equals(p.Name, fieldName, StringComparison.OrdinalIgnoreCase));
+			if (!reader.Read())
+				return (T?)instance;
 
-					property?.SetValue(instance, reader.GetValue(i));
-				}
+			for (var i = 0; i < reader.FieldCount; i++)
+			{
+				var fieldName = reader.GetName(i);
+				var property =
+					properties.FirstOrDefault(p
+						=> string.Equals(p.Name, fieldName, StringComparison.OrdinalIgnoreCase));
+
+				property?.SetValue(instance, reader.GetValue(i));
 			}
 
 			return (T?)instance;
@@ -232,7 +302,8 @@ namespace MappingExamples
 						members.FirstOrDefault(m
 							=> string.Equals(m.Name, fieldName, StringComparison.OrdinalIgnoreCase));
 
-					accessor[instance, fieldName] = reader.GetValue(i);
+					if (property != null)
+						accessor[instance, property.Name] = reader.GetValue(i);
 				}
 			}
 
@@ -252,10 +323,11 @@ namespace MappingExamples
 				if (property.CanWrite)
 				{
 					var columnOrdinalExpression = Expression.Call(
-						readerParam, 
+						readerParam,
 						"GetOrdinal", null,
 						Expression.Constant(property.Name));
-					var columnExpression = Expression.Call(readerParam, "GetValue", null, columnOrdinalExpression);
+					var columnExpression = Expression.Call(
+						readerParam, "GetValue", null, columnOrdinalExpression);
 					var valueExpression = Expression.Convert(columnExpression, property.PropertyType);
 					var assignmentExpression = Expression.Bind(property, valueExpression);
 					bindings.Add(assignmentExpression);
@@ -269,7 +341,6 @@ namespace MappingExamples
 		private Order ReadOrder(IDataReader reader)
 		{
 			var i = 0;
-
 			return new Order
 			{
 				OrderId = reader.GetInt32(i),
@@ -390,7 +461,7 @@ namespace MappingExamples
 			return dataReaderMock;
 		}
 
-		protected static SqlConnection OpenConnection()
+		private static SqlConnection OpenConnection()
 		{
 			var connection = new SqlConnection(ConnectionString);
 			connection.Open();

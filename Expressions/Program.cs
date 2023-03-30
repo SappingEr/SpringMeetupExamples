@@ -5,7 +5,7 @@ namespace Expressions;
 
 class Program
 {
-	private static Dictionary<Type, string[]> _columnCache = new Dictionary<Type, string[]>();
+	private static Dictionary<Type, string[]> _columnCache = new();
 
 	public static void Main(string[] args)
 	{
@@ -66,19 +66,14 @@ class Program
 		var addFuncExpression =
 			Expression.Lambda<Func<int, int, int>>(addExpression, lParameter, rParameter);
 
-		var addFunc = addFuncExpression.Compile();
+		Func<int, int, int> addFunc = addFuncExpression.Compile();
 
 		var expressionResult = addFunc(j, k);
 		Console.WriteLine(expressionResult); //15
 
 		#endregion
-		
-		#region SimpleExpressionTreeVisitor
 
-		//Multiply
-		//Parameter
-		//Constant
-		//1665
+		#region SimpleExpressionTreeVisitor
 
 		Expression<Func<int, int>> expression = p => p * 3;
 
@@ -102,7 +97,7 @@ class Program
 
 	class MyVisitor : ExpressionVisitor
 	{
-		public override Expression Visit(Expression node)
+		public override Expression Visit(Expression? node)
 		{
 			Console.WriteLine(node.NodeType);
 			return base.Visit(node);
@@ -175,23 +170,4 @@ class Program
 		public string Name { get; set; } = null!;
 		public int Age { get; set; }
 	}
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
